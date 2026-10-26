@@ -25,7 +25,8 @@ EQ presets and Bass Boost, one tap away, without opening Smart Control Plus.
   and reorder. The header always names the EQ you're editing, e.g. "Warm · edited".
 - **Bass Boost**, battery level and the active codec.
 - **Home-screen widget**, one resizable widget in three sizes (4×1, 4×2, 4×3): noise switch, Adaptive,
-  a 7-stop slider, your 4 favorite presets and Bass Boost. A tap takes about half a second.
+  a 7-stop slider, your 4 favorite presets and Bass Boost; the large size adds the headphones' touch
+  lock. A tap takes about half a second.
 - **Optional widget lock:** a lock in the widget's corner blocks every tap — controls and opening the
   app — until you unlock it. Each widget locks separately.
 - Material Design 1 look with rounded corners, light and dark themes following the system.
@@ -50,6 +51,23 @@ Tested on a Samsung Galaxy S24 (Android 16).
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
+For a release build (optimized, about 2 MB), create your own signing key and put its details in a
+`keystore.properties` file in the project root (git-ignored):
+
+```properties
+storeFile=C:/path/to/your-release.jks
+storePassword=...
+keyAlias=...
+keyPassword=...
+```
+
+```bash
+./gradlew :app:assembleRelease
+```
+
+Without `keystore.properties` the release APK is built unsigned. Debug builds use the app ID
+`cz.metlicka.m4control.debug`, so they install next to a release build.
+
 Run the unit tests (frame encoding and stream parsing, request/response handling, noise and EQ
 rules):
 
@@ -67,7 +85,7 @@ Sennheiser's vendor commands. [`plan.md`](plan.md) has the protocol notes (frame
 used), the design decisions and what was learned testing on a real device.
 
 ```
-app/src/main/java/com/example/m4control/
+app/src/main/java/cz/metlicka/m4control/
   gaia/     frame encoding, stream parser, request/response session (plain Kotlin, unit-tested)
   device/   connection owner + command queue, noise and EQ models, Bluetooth access
   state/    app state and persistence

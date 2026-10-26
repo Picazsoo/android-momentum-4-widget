@@ -19,8 +19,9 @@ Prior work: the open-source projects
 below were cross-checked against them and confirmed on a real MOMENTUM 4.
 
 - **Distribution: sideload only** (`adb install`). Not built for Google Play.
-- App name **"M4 Control"**, applicationId **`com.example.m4control`** (placeholder
-  — rename before first build).
+- App name **"M4 Control"**, applicationId **`cz.metlicka.m4control`** (debug builds
+  `cz.metlicka.m4control.debug`). The ID and the release signing key are the app's permanent
+  identity: never change either after a release, or updates stop installing.
 - **Kotlin**, `minSdk 29` (Android 10), `compileSdk 36`, `targetSdk 35`.
   Build host has SDK platforms 35/36/37, build-tools 35/36, Java 25. **Pin the
   Gradle Java toolchain to 21** (`kotlin { jvmToolchain(21) }`) — AGP/Kotlin lag
@@ -263,7 +264,7 @@ app/
   build.gradle.kts            Kotlin, Compose + androidx.compose.material, DataStore, jvmToolchain 21
   src/main/AndroidManifest.xml
   src/main/assets/presets.json            built-in presets (seed)
-  src/main/java/com/example/m4control/
+  src/main/java/cz/metlicka/m4control/
     M4App.kt                  Application: creates ConnectionManager
     gaia/
       Frame.kt, FrameParser.kt   framing, stream parser, type/base decode (pure Kotlin)
@@ -407,12 +408,17 @@ and dark, with switches to preview link states and the device's audio mode.
   - **Medium 4×2:** header; "Noise control" + readout; noise row; end labels;
     EQ caption + 4 favorites; Bass Boost.
   - **Large 4×3:** medium + footer "Connected · codec" and "updated … ago".
+- **Lock touch controls** (large size only): a row below Bass Boost toggling the headphones'
+  touch lock (`1606`/`1607`). It has no notification on the registered features, so widget
+  sessions read it (one extra request); dimmed while unknown or pending.
 - **Optional lock** (Settings → "Lock button on widget", off by default): a lock icon at the header's
   right end, per widget instance (`widget_locked_<appWidgetId>`). Unlocked: faint open lock. Locked: a
   grey veil covers the whole card and swallows every tap — controls and opening the app; a tap on it only
   shows "Locked — tap the lock to unlock" for 2.5 s. The closed lock sits above the veil in an undimmed
   card-coloured circle with a teal icon so it clearly stays live. Lock/hint taps are broadcasts to the
-  provider (no foreground service). Turning the setting off unlocks every widget.
+  provider (no foreground service) and return immediately — holding the receiver for the hint
+  (goAsync) would queue later taps, including the unlock. Repeated taps extend the hint.
+  Turning the setting off unlocks every widget.
 - **Tap targets:** with switch and AUTO the compact slider cells are ~30 dp wide —
   below the 48 dp guideline; acceptable for a strip, verify on a real launcher. Don't
   add stops.
@@ -467,7 +473,6 @@ and dark, with switches to preview link states and the device's audio mode.
    calls it "TransparentHearing_Mode". Confirm what it does before relying on it.
 5. **Compact tap targets** with switch + AUTO + 7 stops — check on a real launcher;
    fallback is moving AUTO into the header.
-6. Real app name / applicationId.
 
 ## Implementation status (2026-10-26)
 
@@ -496,6 +501,8 @@ Deviations from the sections above:
 - Persistence uses SharedPreferences, not DataStore (synchronous reads in the widget provider).
 - No `cancelDiscovery()` before connecting — it needs `BLUETOOTH_SCAN`.
 - Settings has "Add widget to home screen" (`requestPinAppWidget`).
+- Release builds use R8 (minify + resource shrinking, about 2.2 MB) and are signed from a git-ignored
+  `keystore.properties`; enum names are kept (`proguard-rules.pro`) because they are persisted.
 
 Not yet checked on device: large widget size, light mode, the Equalizer and Settings screens
 (rename/delete/undo), the `UNAVAILABLE` path with Smart Control Plus connected, reconnect after the

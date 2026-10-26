@@ -1,24 +1,50 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
 
+// Release signing comes from the git-ignored keystore.properties at the repo root.
+// Without it (or with empty passwords) release builds are produced unsigned.
+val keystoreProps = Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+val hasReleaseKey = !keystoreProps.getProperty("storePassword").isNullOrEmpty()
+
 android {
-    namespace = "com.example.m4control"
+    namespace = "cz.metlicka.m4control"
     compileSdk = 36
 
     defaultConfig {
-        // Placeholder id until the app gets its real name (plan: open question 6).
-        applicationId = "com.example.m4control"
+        applicationId = "cz.metlicka.m4control"
         minSdk = 29
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }
 
+    signingConfigs {
+        if (hasReleaseKey) {
+            create("release") {
+                storeFile = file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            // Debug builds install next to the release (different signing key).
+            applicationIdSuffix = ".debug"
+        }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (hasReleaseKey) signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {

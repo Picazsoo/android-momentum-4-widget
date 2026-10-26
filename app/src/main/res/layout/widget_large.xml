@@ -112,6 +112,12 @@
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="16dp" android:text="Bass Boost" android:textColor="@color/w_fg" android:textSize="14sp" />
                 <ImageView android:id="@+id/sw_bass" android:layout_width="44dp" android:layout_height="24dp" android:scaleType="fitCenter" android:src="@drawable/w_sw_off" />
             </LinearLayout>
+            <ImageView android:layout_width="match_parent" android:layout_height="1dp" android:src="@color/w_div" android:scaleType="fitXY" />
+            <LinearLayout android:id="@+id/touch_row" android:layout_width="match_parent" android:layout_height="44dp" android:gravity="center_vertical" android:orientation="horizontal">
+                <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_touch" android:tint="@color/w_fg2" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="16dp" android:text="Lock touch controls" android:textColor="@color/w_fg" android:textSize="14sp" />
+                <ImageView android:id="@+id/sw_touch" android:layout_width="44dp" android:layout_height="24dp" android:scaleType="fitCenter" android:src="@drawable/w_sw_off" />
+            </LinearLayout>
         </LinearLayout>
         <ImageView android:layout_width="match_parent" android:layout_height="1dp" android:src="@color/w_div" android:scaleType="fitXY" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="8dp" android:orientation="horizontal">

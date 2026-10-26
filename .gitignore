@@ -7,3 +7,8 @@ local.properties
 
 # Local reference material, not published
 spec/
+
+# Release signing secrets and built APKs
+keystore.properties
+*.jks
+dist/
