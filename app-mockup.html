@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>M4 Control App</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<style>
+  /* Page chrome (not part of the app) */
+  :root{--page-bg:#eceff1;--page-fg:rgba(0,0,0,.87);--page-muted:rgba(0,0,0,.54);
+    --page-panel:#fff;--page-line:rgba(0,0,0,.12)}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --page-bg:#1a1a1a;--page-fg:#fff;--page-muted:rgba(255,255,255,.7);
+    --page-panel:#303030;--page-line:rgba(255,255,255,.12);color-scheme:dark}}
+  :root[data-theme="dark"]{--page-bg:#1a1a1a;--page-fg:#fff;--page-muted:rgba(255,255,255,.7);
+    --page-panel:#303030;--page-line:rgba(255,255,255,.12);color-scheme:dark}
+
+  /* Material Design 1 app tokens — light */
+  .light{
+    --bg:#fafafa; --card:#fff; --bar:#455A64; --status:#37474F; --on-bar:#fff;
+    --fg:rgba(0,0,0,.87); --fg2:rgba(0,0,0,.54); --fg3:rgba(0,0,0,.38);
+    --div:rgba(0,0,0,.12); --sel:rgba(0,0,0,.08); --hover:rgba(0,0,0,.04);
+    --track:rgba(0,0,0,.26);
+    --anc:#1E88E5; --anc-t:#1976D2; --trans:#FB8C00; --trans-t:#E65100;
+    --accent:#009688; --accent-t:#00796B; --accent-50:rgba(0,150,136,.5); --on-accent:#fff;
+    --ok:#43A047; --busy:#F4511E; --busy-bg:#FBE9E7; --info-bg:#ECEFF1;
+    --sw-track:rgba(0,0,0,.38); --sw-thumb:#fafafa;
+    --shadow:0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.12),0 1px 5px 0 rgba(0,0,0,.2);
+    --shadow-bar:0 2px 4px rgba(0,0,0,.25);
+  }
+  /* — dark (Material 1 dark theme) */
+  .dark{
+    --bg:#303030; --card:#424242; --bar:#212121; --status:#000; --on-bar:#fff;
+    --fg:#fff; --fg2:rgba(255,255,255,.7); --fg3:rgba(255,255,255,.5);
+    --div:rgba(255,255,255,.12); --sel:rgba(255,255,255,.12); --hover:rgba(255,255,255,.06);
+    --track:rgba(255,255,255,.3);
+    --anc:#64B5F6; --anc-t:#90CAF9; --trans:#FFB74D; --trans-t:#FFCC80;
+    --accent:#64FFDA; --accent-t:#64FFDA; --accent-50:rgba(100,255,218,.5); --on-accent:rgba(0,0,0,.87);
+    --ok:#69F0AE; --busy:#FF8A65; --busy-bg:rgba(255,138,101,.14); --info-bg:rgba(255,255,255,.08);
+    --sw-track:rgba(255,255,255,.3); --sw-thumb:#bdbdbd;
+    --shadow:0 2px 2px 0 rgba(0,0,0,.3),0 3px 1px -2px rgba(0,0,0,.25),0 1px 5px 0 rgba(0,0,0,.4);
+    --shadow-bar:0 2px 4px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--page-bg);color:var(--page-fg);
+    font-family:Roboto,system-ui,"Segoe UI",sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{padding:28px max(16px,env(safe-area-inset-left,0px));max-width:1040px;margin:0 auto}
+  header.page{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-start;justify-content:space-between;margin-bottom:22px}
+  header.page h1{font-size:20px;font-weight:500;margin:0}
+  header.page p{margin:2px 0 0;color:var(--page-muted);font-size:13px;max-width:52ch}
+  .controls{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+  .ctl-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .ctl-row > span{font-size:12px;color:var(--page-muted)}
+  .seg{display:inline-flex;background:var(--page-panel);border:1px solid var(--page-line);border-radius:8px;overflow:hidden}
+  .seg button{font:inherit;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;
+    color:var(--page-muted);background:none;border:0;padding:7px 11px;cursor:pointer}
+  .seg button + button{border-left:1px solid var(--page-line)}
+  .seg button[aria-pressed="true"]{background:var(--page-line);color:var(--page-fg)}
+  .phones{display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+  .slot{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .slot-cap{font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--page-muted)}
+  .note{color:var(--page-muted);font-size:13px;margin-top:24px}
+  .note p{margin:0 0 8px;max-width:84ch}
+
+  /* Phone frame */
+  .phone{width:360px;max-width:calc(100vw - 32px);height:740px;border-radius:36px;border:10px solid #111;
+    overflow:hidden;display:flex;flex-direction:column;background:var(--bg);color:var(--fg);position:relative;
+    box-shadow:0 20px 50px -20px rgba(0,0,0,.5);font-variant-numeric:tabular-nums}
+  .sbar{height:24px;flex:none;background:var(--status);color:#fff;display:flex;align-items:center;
+    justify-content:space-between;padding:0 14px;font-size:12px}
+  .sbar .material-icons{font-size:14px;margin-left:3px}
+  .abar{height:56px;flex:none;background:var(--bar);color:var(--on-bar);display:flex;align-items:center;
+    gap:8px;padding:0 4px 0 16px;box-shadow:var(--shadow-bar);position:relative;z-index:1}
+  .abar.back{padding-left:4px}
+  .abar h2{font-size:20px;font-weight:500;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ibtn{width:48px;height:48px;border-radius:50%;border:0;background:none;color:inherit;cursor:pointer;
+    display:flex;align-items:center;justify-content:center}
+  .ibtn:hover{background:rgba(255,255,255,.12)}
+  .content{flex:1;overflow-y:auto;padding:8px 8px 24px}
+  .content::-webkit-scrollbar{width:0}
+
+  /* Cards */
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);margin:8px 0;padding:16px}
+  .card.flush{padding:4px 0}
+  .card h3{font-size:14px;font-weight:500;margin:0 0 4px;color:var(--fg)}
+  .muted{color:var(--fg2)} .faint{color:var(--fg3)}
+  .row2{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .cap{font-size:12px;color:var(--fg2)}
+  .sect{font-size:13px;font-weight:500;color:var(--accent-t);padding:12px 16px 4px}
+
+  /* Device card */
+  .dev{display:flex;gap:14px;align-items:center}
+  .dev .avatar{width:48px;height:48px;border-radius:50%;background:var(--sel);display:flex;align-items:center;
+    justify-content:center;flex:none} .dev .avatar .material-icons{color:var(--fg2)}
+  .dev .t{font-size:16px;font-weight:500;display:flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
+  .dot.grey{background:var(--fg3)} .dot.busy{background:var(--busy)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .chip{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--fg2);background:var(--sel);
+    border-radius:12px;padding:2px 9px 2px 7px}
+  .chip .material-icons{font-size:14px}
+
+  /* Banners */
+  .banner{display:flex;gap:12px;align-items:flex-start;border-radius:12px;padding:12px 12px 12px 14px;margin:8px 0;
+    font-size:13px;background:var(--info-bg);color:var(--fg)}
+  .banner .material-icons{font-size:20px;color:var(--fg2);margin-top:1px}
+  .banner.busy{background:var(--busy-bg)} .banner.busy .material-icons{color:var(--busy)}
+  .banner .b-body{flex:1}
+  .banner .b-act{margin-top:4px}
+
+  /* Buttons */
+  .fbtn{font:inherit;font-size:14px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--accent-t);background:none;border:0;border-radius:8px;padding:8px 10px;cursor:pointer}
+  .fbtn:hover{background:var(--hover)}
+  .rbtn{font:inherit;font-size:14px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--on-accent);background:var(--accent);border:0;border-radius:8px;padding:10px 18px;cursor:pointer;
+    box-shadow:var(--shadow)}
+  .rbtn.block{width:100%}
+  .fab{position:absolute;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;border:0;cursor:pointer;
+    background:var(--accent);color:var(--on-accent);box-shadow:0 6px 10px rgba(0,0,0,.3);display:flex;
+    align-items:center;justify-content:center;z-index:2}
+
+  /* Toggle button group */
+  .tg{display:flex;border:1px solid var(--div);border-radius:8px;overflow:hidden}
+  .tg button{flex:1;min-width:0;height:34px;font:inherit;font-size:12px;font-weight:500;letter-spacing:.02em;
+    text-transform:uppercase;color:var(--fg2);background:none;border:0;cursor:pointer;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+  .tg button + button{border-left:1px solid var(--div)}
+  .tg button:hover{background:var(--hover)}
+  .tg button[aria-pressed="true"]{background:var(--sel);color:var(--fg)}
+
+  /* List rows */
+  .li{display:flex;align-items:center;gap:20px;width:100%;min-height:52px;padding:6px 16px;font:inherit;color:var(--fg);
+    background:none;border:0;text-align:left;cursor:pointer}
+  .li:hover{background:var(--hover)}
+  .li + .li{border-top:1px solid var(--div)}
+  .li > .material-icons{color:var(--fg2);font-size:22px;flex:none}
+  .li .lt{flex:1;min-width:0;font-size:15px}
+  .li .lt small{display:block;font-size:13px;color:var(--fg2);line-height:1.35}
+  .li .lv{font-size:13px;color:var(--fg2)}
+  .li.sel > .material-icons:first-child{color:var(--accent-t)}
+  .star{color:var(--fg3)} .star.on{color:var(--accent-t)}
+  .badge{font-size:10px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--busy);
+    border:1px solid currentColor;border-radius:5px;padding:0 4px;margin-left:6px;vertical-align:1px}
+
+  /* Material 1 switch */
+  .sw{position:relative;flex:none;width:34px;height:14px;margin:0 4px 0 3px;border-radius:7px;
+    background:var(--sw-track);transition:background .15s}
+  .sw::after{content:"";position:absolute;top:-3px;left:-3px;width:20px;height:20px;border-radius:50%;
+    background:var(--sw-thumb);box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .15s,background .15s}
+  [aria-pressed="true"] > .sw{background:var(--accent-50)}
+  [aria-pressed="true"] > .sw::after{transform:translateX(20px);background:var(--accent)}
+  .swrow{display:flex;align-items:center;gap:12px;width:100%;padding:0;background:none;border:0;font:inherit;
+    color:var(--fg);cursor:pointer;text-align:left;min-height:40px}
+  .swrow .lt{flex:1;font-size:15px}
+
+  /* Noise card */
+  .noise-head{display:flex;align-items:center;gap:12px}
+  .noise-head .lt{flex:1}
+  .nval{font-size:15px;font-weight:500}
+  .nval.anc{color:var(--anc-t)} .nval.trans{color:var(--trans-t)} .nval.bal{color:var(--fg)}
+  .nval.adp{color:var(--accent-t)} .nval.off{color:var(--fg3)}
+  .modes{display:flex;gap:8px;margin:14px 0 4px}
+  .mbtn{flex:1;height:36px;border:1px solid var(--div);border-radius:8px;background:none;font:inherit;font-size:13px;
+    font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--fg2);cursor:pointer;display:flex;
+    align-items:center;justify-content:center;gap:6px}
+  .mbtn .material-icons{font-size:18px}
+  .mbtn:hover{background:var(--hover)}
+  .mbtn[aria-pressed="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+  .mbtn.custom[aria-pressed="true"]{background:var(--sel);color:var(--fg);border-color:var(--div)}
+  .off .noise-body{opacity:.45}
+  .ends{display:flex;justify-content:space-between;font-size:12px;color:var(--fg3);margin-top:-2px}
+  .ends .a{color:var(--anc-t)} .ends .t{color:var(--trans-t)}
+  .wind{margin-top:14px}
+
+  /* Material 1 slider via input[type=range]; --rt = track paint, --th = thumb fill, --tb = thumb border */
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:32px;margin:0;background:transparent;cursor:pointer}
+  input[type=range]:focus{outline:none}
+  input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--rt,var(--track))}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;margin-top:-7px;border-radius:50%;
+    background:var(--th,var(--accent));border:var(--tb,0 solid transparent);box-sizing:border-box;
+    box-shadow:var(--ts,0 1px 3px rgba(0,0,0,.35))}
+  input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--rt,var(--track))}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--th,var(--accent));
+    border:var(--tb,0 solid transparent);box-sizing:border-box;box-shadow:var(--ts,0 1px 3px rgba(0,0,0,.35))}
+  input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--anc);outline-offset:2px}
+
+  /* EQ */
+  .eq-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px}
+  .eqname{font-size:20px;font-weight:500}
+  .band{display:grid;grid-template-columns:58px 1fr 62px;align-items:center;gap:8px}
+  .band .hz{font-size:13px;color:var(--fg2)}
+  .band .db{font-size:13px;text-align:right;color:var(--fg)}
+  .card-actions{display:flex;justify-content:flex-end;gap:4px;margin:8px -8px -8px}
+
+  /* Dialog (Material 1, rounded) */
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:4;display:flex;align-items:center;justify-content:center;padding:24px}
+  .dialog{width:100%;background:var(--card);color:var(--fg);border-radius:16px;padding:22px 24px 8px;
+    box-shadow:0 11px 15px -7px rgba(0,0,0,.2),0 24px 38px 3px rgba(0,0,0,.14),0 9px 46px 8px rgba(0,0,0,.12)}
+  .dialog h3{font-size:20px;font-weight:500;margin:0 0 18px}
+  .tf{position:relative;padding-top:14px}
+  .tf label{position:absolute;top:0;left:0;font-size:12px;color:var(--accent-t)}
+  .tf input{width:100%;font:inherit;font-size:16px;color:var(--fg);background:none;border:0;
+    border-bottom:1px solid var(--fg3);padding:6px 0 7px;outline:none}
+  .tf input:focus{border-bottom:2px solid var(--accent);padding-bottom:6px}
+  .tf.err label{color:var(--busy)} .tf.err input{border-bottom:2px solid var(--busy);padding-bottom:6px}
+  .tf-help{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--fg2);margin-top:4px;min-height:18px}
+  .tf.err + .tf-help .msg{color:var(--busy)}
+  .dialog .card-actions{margin:14px -16px 0}
+  .dialog .card-actions .danger{color:var(--busy);margin-right:auto}
+  .snack{display:flex;align-items:center;gap:12px}
+  .snack span{flex:1}
+  .snack .fbtn{color:#64FFDA;padding:4px 8px;margin:-4px -8px -4px 0}
+  .pencil{color:var(--fg3)}
+
+  /* Snackbar */
+  .snack{position:absolute;left:8px;right:8px;bottom:8px;background:#323232;color:#fff;border-radius:8px;
+    padding:12px 16px;font-size:14px;z-index:3;box-shadow:0 3px 8px rgba(0,0,0,.3)}
+  .has-fab .snack{bottom:84px}
+  @media (max-width:420px){.controls{align-items:flex-start}.ctl-row{justify-content:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="page">
+    <div>
+      <h1>M4 Control — app</h1>
+      <p>Material Design 1 with rounded corners, light and dark side by side. Both phones are live and share one state — navigate inside either one, or jump with the screen switch.</p>
+    </div>
+    <div class="controls">
+      <div class="ctl-row"><span>Screen</span><div class="seg" role="group" aria-label="Screen">
+        <button data-go="home">Home</button><button data-go="eq">Equalizer</button>
+        <button data-go="settings">Settings</button><button data-go="pick">Device</button></div></div>
+      <div class="ctl-row"><span>Link</span><div class="seg" role="group" aria-label="Link state">
+        <button data-conn="connected">Connected</button><button data-conn="disconnected">Disconnected</button>
+        <button data-conn="unavailable">Unavailable</button></div></div>
+      <div class="ctl-row"><span>Firmware</span><div class="seg" role="group" aria-label="Firmware">
+        <button data-fw="3.38.3">3.38.3</button><button data-fw="3.40.1">3.40.1</button></div></div>
+    </div>
+  </header>
+
+  <div class="phones">
+    <div class="slot"><div class="slot-cap">Light</div><div class="phone light" data-phone></div></div>
+    <div class="slot"><div class="slot-cap">Dark</div><div class="phone dark" data-phone></div></div>
+  </div>
+
+  <div class="note">
+    <p><b>Home:</b> device status, noise control (switch, Adaptive / Custom, a continuous slider, wind reduction), equalizer with the 4 widget favorites, Bass Boost. <b>Equalizer:</b> sound mode, 5-band editor (−6 to +6 dB), the full preset library — star up to 4 for the widget, save the current bands as a new preset. <b>Settings:</b> optional headphone controls, device info, frame log.</p>
+    <p>Rules shown: moving the slider selects Custom; editing a band switches to User EQ; turning on Bass Boost outside User EQ switches to it and turning it off restores the previous mode; untested firmware shows a banner.</p>
+  </div>
+</div>
+<script>
+(function(){
+  var PRESETS=[
+    {id:"warm",name:"Warm",g:[30,15,0,-10,-20]},{id:"bright",name:"Bright",g:[-10,0,5,20,30]},
+    {id:"vocal",name:"Vocal",g:[-20,-5,25,20,0]},{id:"deepBass",name:"Deep Bass",g:[50,25,0,0,0]},
+    {id:"loudness",name:"Loudness",g:[35,10,-10,15,30]},{id:"soft",name:"Soft",g:[10,5,0,-15,-30]},
+    {id:"acoustic",name:"Acoustic",g:[10,10,5,10,15]}];
+  var HZ=["63 Hz","250 Hz","1 kHz","4 kHz","8 kHz"];
+  var MODES=[[1,"User EQ"],[2,"Podcast"],[3,"Personal"],[0,"Bypass"]];
+  var MODE_NAME={0:"Bypass",1:"User EQ",2:"Podcast",3:"Personalized sound"};
+  var DEVICES=[["MOMENTUM 4","00:1B:66:…:4F","headset"],["Pixel Buds Pro","F8:0F:F9:…:21","headset"],["Car audio","00:0A:30:…:9C","directions_car"]];
+  var S={screen:"home",conn:"connected",fw:"3.38.3",device:0,noise:"custom",lastOn:"custom",level:83,wind:2,
+    audio:1,gains:PRESETS[0].g.slice(),bass:true,bassPrev:null,favs:["warm","bright","vocal","deepBass"],
+    smartPause:true,onHead:true,touchLock:false,sidetone:2,pauseFull:false,snack:"",userN:0};
+  var snackTimer;
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+
+  // Noise: level L 0–100 (100 = full ANC, left). Slider value = 100 - L so left is ANC.
+  function mix(L){
+    var p;
+    if(L===50) return {t:"Balanced",c:"bal"};
+    if(L>50){p=Math.round((L-50)*2);return {t:"Noise Cancelling "+p+"%",c:"anc"};}
+    p=Math.round((50-L)*2);return {t:"Transparency "+p+"%",c:"trans"};
+  }
+  function noiseLabel(){
+    if(S.noise==="off") return {t:"Off",c:"off"};
+    if(S.noise==="adaptive") return {t:"Adaptive",c:"adp"};
+    return mix(S.level);
+  }
+  function noiseStyle(){
+    var x=100-S.level, a=Math.min(50,x), b=Math.max(50,x);
+    if(S.noise!=="custom") return "--rt:var(--track);--th:"+(S.noise==="off"?"var(--track)":"transparent")+";--ts:none";
+    if(S.level===50) return "--rt:var(--track);--th:var(--card);--tb:2px solid var(--fg2);--ts:none";
+    var col=S.level>50?"var(--anc)":"var(--trans)";
+    return "--rt:linear-gradient(to right,var(--track) "+a+"%,"+col+" "+a+"%,"+col+" "+b+"%,var(--track) "+b+"%);--th:"+col;
+  }
+  function bandStyle(g){
+    var x=(g+60)/120*100, a=Math.min(50,x), b=Math.max(50,x);
+    return "--rt:linear-gradient(to right,var(--track) "+a+"%,var(--accent) "+a+"%,var(--accent) "+b+"%,var(--track) "+b+"%)";
+  }
+  function fmtDb(g){var v=(g/10).toFixed(1);return (g>0?"+":g<0?"−":"")+v.replace("-","")+" dB";}
+  function presetById(id){for(var i=0;i<PRESETS.length;i++) if(PRESETS[i].id===id) return PRESETS[i]; return null;}
+  function matchPreset(){
+    for(var i=0;i<PRESETS.length;i++){var p=PRESETS[i];if(p.g.every(function(v,j){return v===S.gains[j];})) return p;}
+    return null;
+  }
+  function eqLabel(){
+    if(S.audio!==1) return MODE_NAME[S.audio]||"Unknown mode";
+    var p=matchPreset(); if(p) return p.name;
+    return S.gains.every(function(v){return v===0;})?"Flat EQ":"Custom";
+  }
+  function sw(on){return '<span class="sw"></span>';}
+
+  // ---------- screens ----------
+  function sbar(){return '<div class="sbar"><span>12:30</span><span><i class="material-icons">bluetooth</i><i class="material-icons">signal_cellular_alt</i><i class="material-icons">battery_full</i></span></div>';}
+  function abar(title,back,actions){
+    return '<div class="abar'+(back?' back':'')+'">'+(back?'<button class="ibtn" data-go="home" aria-label="Back"><i class="material-icons">arrow_back</i></button>':'')+
+      '<h2>'+title+'</h2>'+(actions||'')+'</div>';
+  }
+  function banners(){
+    var h="";
+    if(S.conn==="disconnected") h+='<div class="banner"><i class="material-icons">bluetooth_disabled</i><div class="b-body">Headphones not connected. Showing last known settings from 3 h ago.</div></div>';
+    if(S.conn==="unavailable") h+='<div class="banner busy"><i class="material-icons">sync_problem</i><div class="b-body">Control connection unavailable. Audio is connected, but the headphones didn\'t accept a control connection.<div class="b-act"><button class="fbtn" data-act="retry">Retry</button></div></div></div>';
+    if(S.fw!=="3.38.3") h+='<div class="banner"><i class="material-icons">info</i><div class="b-body">Untested firmware '+S.fw+'. Controls should work, but this version hasn\'t been qualified.</div></div>';
+    return h;
+  }
+  function home(){
+    var L=noiseLabel(), dot=S.conn==="connected"?"":S.conn==="unavailable"?" busy":" grey";
+    var sync=S.conn==="connected"?"Updated just now":S.conn==="disconnected"?"Last known · 3 h ago":"Last known · 5 min ago";
+    var h=sbar()+abar("M4 Control",false,'<button class="ibtn" data-go="settings" aria-label="Settings"><i class="material-icons">settings</i></button>');
+    h+='<div class="content">'+banners();
+    h+='<div class="card"><div class="dev"><div class="avatar"><i class="material-icons">headset</i></div><div style="flex:1;min-width:0">'+
+      '<div class="t">'+esc(DEVICES[S.device][0])+'<span class="dot'+dot+'"></span></div>'+
+      '<div class="chips"><span class="chip"><i class="material-icons">battery_charging_full</i>72%</span>'+
+      (S.conn==="connected"?'<span class="chip"><i class="material-icons">graphic_eq</i>AAC</span>':'')+
+      '<span class="chip">'+sync+'</span></div></div></div></div>';
+    // Noise control
+    h+='<div class="card'+(S.noise==="off"?" off":"")+'"><div class="noise-head"><div class="lt"><h3>Noise control</h3>'+
+      '<div class="nval '+L.c+'">'+L.t+'</div></div><button class="swrow" style="width:auto" data-act="noise-toggle" aria-pressed="'+(S.noise!=="off")+'" aria-label="Noise control on or off">'+sw()+'</button></div>'+
+      '<div class="noise-body"><div class="modes">'+
+      '<button class="mbtn" data-act="adaptive" aria-pressed="'+(S.noise==="adaptive")+'"><i class="material-icons">brightness_auto</i>Adaptive</button>'+
+      '<button class="mbtn custom" data-act="custom" aria-pressed="'+(S.noise==="custom")+'"><i class="material-icons">tune</i>Custom</button></div>'+
+      '<input type="range" min="0" max="100" step="1" value="'+(100-S.level)+'" data-noise style="'+noiseStyle()+'" aria-label="Noise control mix">'+
+      '<div class="ends"><span class="a">Cancelling</span><span>Balanced</span><span class="t">Transparency</span></div>'+
+      '<div class="wind"><div class="cap" style="margin-bottom:6px">Wind reduction</div><div class="tg">'+
+      [[0,"Off"],[1,"Max"],[2,"Auto"]].map(function(w){return '<button data-wind="'+w[0]+'" aria-pressed="'+(S.wind===w[0])+'">'+w[1]+'</button>';}).join('')+
+      '</div></div></div></div>';
+    // EQ
+    h+='<div class="card"><div class="eq-head"><div><h3>Equalizer</h3><div class="eqname" data-eqlabel>'+esc(eqLabel())+'</div></div>'+
+      '<button class="fbtn" data-go="eq">All presets</button></div>'+
+      '<div class="cap" style="margin-bottom:6px">Widget favorites</div><div class="tg">'+
+      S.favs.map(function(id){var p=presetById(id);var on=S.audio===1&&matchPreset()===p;
+        return '<button data-apply="'+id+'" aria-pressed="'+on+'">'+esc(p.name)+'</button>';}).join('')+'</div>'+
+      '<div style="margin-top:10px;border-top:1px solid var(--div);padding-top:4px"><button class="swrow" data-act="bass" aria-pressed="'+S.bass+'">'+
+      '<i class="material-icons" style="color:var(--fg2)">graphic_eq</i><span class="lt">Bass Boost</span>'+sw()+'</button></div></div>';
+    return h+'</div>';
+  }
+  function eq(){
+    var h=sbar()+abar("Equalizer",true)+'<div class="content">'+banners();
+    h+='<div class="card"><div class="cap">Now playing with</div><div class="eqname" data-eqlabel style="margin-bottom:12px">'+esc(eqLabel())+'</div>'+
+      '<div class="cap" style="margin-bottom:6px">Sound mode</div><div class="tg">'+
+      MODES.map(function(m){return '<button data-audio="'+m[0]+'" aria-pressed="'+(S.audio===m[0])+'">'+m[1]+'</button>';}).join('')+'</div></div>';
+    h+='<div class="card"><div class="row2" style="margin-bottom:6px"><h3>Bands</h3><span class="cap">−6 to +6 dB</span></div>'+
+      S.gains.map(function(g,i){return '<div class="band"><span class="hz">'+HZ[i]+'</span>'+
+        '<input type="range" min="-60" max="60" step="5" value="'+g+'" data-band="'+i+'" style="'+bandStyle(g)+'" aria-label="'+HZ[i]+' gain">'+
+        '<span class="db" data-db="'+i+'">'+fmtDb(g)+'</span></div>';}).join('')+
+      '<div class="card-actions"><button class="fbtn" data-act="flat">Flat</button><button class="fbtn" data-act="save">Save as preset</button></div></div>';
+    var cur=S.audio===1?matchPreset():null;
+    h+='<div class="card flush"><div class="sect">Presets</div><div class="cap" style="padding:0 16px 6px">Tap to apply. Star up to 4 for the widget.</div>'+
+      PRESETS.map(function(p){var on=cur===p, fav=S.favs.indexOf(p.id)>=0;
+        return '<div class="li'+(on?' sel':'')+'" data-apply="'+p.id+'" role="button" tabindex="0">'+
+          '<i class="material-icons">'+(on?'check_circle':'radio_button_unchecked')+'</i>'+
+          '<span class="lt">'+esc(p.name)+'<small>'+(p.user?'Your preset · ':'')+p.g.map(function(v){return (v/10).toFixed(1);}).join(' · ')+'</small></span>'+
+          (p.user?'<button class="ibtn pencil" data-rename="'+p.id+'" aria-label="Edit '+esc(p.name)+'"><i class="material-icons">edit</i></button>':'')+
+          '<button class="ibtn star'+(fav?' on':'')+'" data-fav="'+p.id+'" aria-label="Favorite"><i class="material-icons">'+(fav?'star':'star_border')+'</i></button></div>';}).join('')+
+      '</div>';
+    return h+'</div><button class="fab" data-act="save" aria-label="Save current bands as preset"><i class="material-icons">add</i></button>';
+  }
+  function settings(){
+    function t(key,title,sub,extra){return '<button class="li swrow" style="padding:6px 16px" data-toggle="'+key+'" aria-pressed="'+S[key]+'">'+
+      '<span class="lt">'+title+(extra||'')+(sub?'<small>'+sub+'</small>':'')+'</span>'+sw()+'</button>';}
+    var h=sbar()+abar("Settings",true)+'<div class="content">'+banners();
+    h+='<div class="card flush"><div class="sect">Headphones</div>'+
+      t("smartPause","Smart Pause","Pause when you take the headphones off")+
+      t("onHead","On-head detection","")+
+      t("touchLock","Lock touch controls","")+
+      '<div class="li" style="cursor:default"><span class="lt">Sidetone<small>Hear your own voice in calls</small>'+
+        '<input type="range" min="0" max="4" step="1" value="'+S.sidetone+'" data-sidetone style="--rt:linear-gradient(to right,var(--accent) '+(S.sidetone*25)+'%,var(--track) '+(S.sidetone*25)+'%)" aria-label="Sidetone level"></span>'+
+        '<span class="lv" data-sidetone-v>'+S.sidetone+'</span></div>'+
+      t("pauseFull","Pause at full transparency","","<span class=\"badge\">Unverified</span>")+'</div>';
+    h+='<div class="card flush"><div class="sect">Device</div>'+
+      '<button class="li" data-go="pick"><i class="material-icons">headset</i><span class="lt">Headphones<small>'+esc(DEVICES[S.device][0])+'</small></span><i class="material-icons faint">chevron_right</i></button>'+
+      '<div class="li" style="cursor:default"><i class="material-icons">memory</i><span class="lt">Firmware<small>'+S.fw+(S.fw==="3.38.3"?" · supported":" · untested")+'</small></span></div>'+
+      '<div class="li" style="cursor:default"><i class="material-icons">badge</i><span class="lt">Model<small>MOMENTUM 4 (recorded on first connect)</small></span></div></div>';
+    h+='<div class="card flush"><div class="sect">About</div>'+
+      '<button class="li"><i class="material-icons">receipt_long</i><span class="lt">Frame log<small>Debug builds only</small></span><i class="material-icons faint">chevron_right</i></button>'+
+      '<div class="li" style="cursor:default"><i class="material-icons">info</i><span class="lt">M4 Control<small>Version 1.0 (sideload)</small></span></div></div>';
+    return h+'</div>';
+  }
+  function pick(){
+    var h=sbar()+abar("Choose headphones",true)+'<div class="content">';
+    h+='<div class="card flush"><div class="sect">Paired devices</div>'+
+      DEVICES.map(function(d,i){var on=S.device===i;
+        return '<button class="li'+(on?' sel':'')+'" data-device="'+i+'"><i class="material-icons">'+(on?'radio_button_checked':'radio_button_unchecked')+'</i>'+
+          '<span class="lt">'+esc(d[0])+(i===0?'<span class="badge" style="color:var(--accent-t)">Recommended</span>':'')+'<small>'+d[1]+'</small></span>'+
+          '<i class="material-icons faint">'+d[2]+'</i></button>';}).join('')+'</div>';
+    h+='<div class="banner"><i class="material-icons">info</i><div class="b-body">Not listed? Pair the headphones in Android Bluetooth settings first, then come back.</div></div>';
+    h+='<div style="padding:8px 4px"><button class="rbtn block" data-go="home">Use this device</button></div>';
+    return h+'</div>';
+  }
+
+  var NAME_MAX=30;
+  function dialog(){
+    var d=S.dialog; if(!d) return "";
+    return '<div class="scrim" data-act="dlg-cancel"><div class="dialog" role="dialog" aria-modal="true" aria-label="'+(d.mode==="new"?"Save preset":"Edit preset")+'">'+
+      '<h3>'+(d.mode==="new"?"Save preset":"Edit preset")+'</h3>'+
+      '<div class="tf'+(d.error?' err':'')+'"><label>Preset name</label>'+
+      '<input type="text" maxlength="'+NAME_MAX+'" value="'+esc(d.name)+'" data-dlg-name autocomplete="off" spellcheck="false"></div>'+
+      '<div class="tf-help"><span class="msg" data-dlg-msg>'+esc(d.error||"")+'</span><span data-dlg-count>'+d.name.length+' / '+NAME_MAX+'</span></div>'+
+      '<div class="card-actions">'+(d.mode==="rename"?'<button class="fbtn danger" data-act="dlg-delete">Delete</button>':'')+
+      '<button class="fbtn" data-act="dlg-cancel">Cancel</button><button class="fbtn" data-act="dlg-save">Save</button></div>'+
+      '</div></div>';
+  }
+  function nameError(name,selfId){
+    var n=name.trim();
+    if(!n) return "Enter a name";
+    for(var i=0;i<PRESETS.length;i++)
+      if(PRESETS[i].id!==selfId&&PRESETS[i].name.toLowerCase()===n.toLowerCase()) return "A preset with this name already exists";
+    return "";
+  }
+  function saveDialog(){
+    var d=S.dialog, err=nameError(d.name,d.id), n=d.name.trim();
+    if(err){d.error=err;return;}
+    if(d.mode==="new"){S.userN++;PRESETS.push({id:"user"+S.userN,name:n,g:d.gains,user:true});snack("Saved as "+n);}
+    else{var p=presetById(d.id),old=p.name;p.name=n;if(old!==n) snack("Renamed to "+n);}
+    S.dialog=null;
+  }
+  // Delete a user preset. A favorite slot it held is refilled with the first built-in
+  // that isn't a favorite yet, so the widget keeps 4 buttons. Undo restores both.
+  function deletePreset(id){
+    var idx=-1; PRESETS.forEach(function(p,i){if(p.id===id) idx=i;});
+    var p=PRESETS[idx], favPos=S.favs.indexOf(id), refill=null;
+    PRESETS.splice(idx,1);
+    if(favPos>=0){
+      for(var i=0;i<PRESETS.length;i++) if(!PRESETS[i].user&&S.favs.indexOf(PRESETS[i].id)<0){refill=PRESETS[i].id;break;}
+      if(refill) S.favs[favPos]=refill; else S.favs.splice(favPos,1);
+    }
+    S.undo={preset:p,idx:idx,favPos:favPos,refill:refill};
+    snack("Deleted "+p.name+(refill?" · "+presetById(refill).name+" added to favorites":""),"undo",5000);
+  }
+  function undoDelete(){
+    var u=S.undo; if(!u) return;
+    PRESETS.splice(Math.min(u.idx,PRESETS.length),0,u.preset);
+    if(u.favPos>=0){
+      var at=u.refill?S.favs.indexOf(u.refill):-1;
+      if(at>=0) S.favs[at]=u.preset.id;
+      else if(S.favs.length<4) S.favs.splice(Math.min(u.favPos,S.favs.length),0,u.preset.id);
+    }
+    S.undo=null; S.snack=""; S.snackAct="";
+  }
+
+  function render(){
+    qa("[data-phone]").forEach(function(ph){
+      var c=ph.querySelector(".content"), top=c?c.scrollTop:0, same=ph.getAttribute("data-screen")===S.screen;
+      ph.innerHTML=(S.screen==="home"?home():S.screen==="eq"?eq():S.screen==="settings"?settings():pick())+
+        (S.screen==="eq"?dialog():"")+
+        (S.snack?'<div class="snack"><span>'+esc(S.snack)+'</span>'+
+          (S.snackAct==="undo"?'<button class="fbtn" data-act="undo">Undo</button>':'')+'</div>':'');
+      ph.classList.toggle("has-fab",S.screen==="eq");
+      ph.setAttribute("data-screen",S.screen);
+      var nc=ph.querySelector(".content"); if(nc&&same) nc.scrollTop=top;
+    });
+    qa("[data-go]").forEach(function(b){if(b.closest(".seg")) b.setAttribute("aria-pressed",b.getAttribute("data-go")===S.screen);});
+    qa("[data-conn]").forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute("data-conn")===S.conn);});
+    qa("[data-fw]").forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute("data-fw")===S.fw);});
+    if(S.dialog&&S.screen==="eq"){
+      var f=qa("[data-dlg-name]")[S.focusPhone]||qa("[data-dlg-name]")[0];
+      if(f&&document.activeElement!==f){
+        f.focus();
+        if(S.dialog.fresh){f.select();S.dialog.fresh=false;} else f.setSelectionRange(f.value.length,f.value.length);
+      }
+    }
+  }
+  function snack(msg,act,ms){
+    S.snack=msg;S.snackAct=act||"";clearTimeout(snackTimer);
+    snackTimer=setTimeout(function(){S.snack="";S.snackAct="";S.undo=null;render();},ms||2600);
+  }
+  function setAudio(m){S.audio=m;S.bassPrev=null;}
+
+  document.addEventListener("click",function(e){
+    var el=e.target.closest("button,[data-apply],.scrim"); if(!el) return;
+    if(el.classList.contains("scrim")&&e.target!==el) return; // clicks inside the dialog card
+    var a=function(k){return el.getAttribute(k);};
+    var ph=el.closest("[data-phone]"); if(ph) S.focusPhone=qa("[data-phone]").indexOf(ph);
+    if(el.hasAttribute("data-rename")){
+      var rp=presetById(a("data-rename"));
+      S.dialog={mode:"rename",id:rp.id,name:rp.name,error:"",fresh:true};
+    }
+    else if(el.hasAttribute("data-fav")){
+      e.stopPropagation();
+      var id=a("data-fav"), i=S.favs.indexOf(id);
+      if(i>=0){ if(S.favs.length<=1){snack("Keep at least one favorite");} else S.favs.splice(i,1); }
+      else if(S.favs.length>=4) snack("The widget shows 4 favorites — unstar one first");
+      else S.favs.push(id);
+    }
+    else if(el.hasAttribute("data-go")){S.screen=a("data-go");if(S.snackAct!=="undo"){S.snack="";}}
+    else if(el.hasAttribute("data-conn")) S.conn=a("data-conn");
+    else if(el.hasAttribute("data-fw")) S.fw=a("data-fw");
+    else if(el.hasAttribute("data-device")) S.device=+a("data-device");
+    else if(el.hasAttribute("data-wind")) S.wind=+a("data-wind");
+    else if(el.hasAttribute("data-audio")) setAudio(+a("data-audio"));
+    else if(el.hasAttribute("data-apply")){var p=presetById(a("data-apply"));S.gains=p.g.slice();setAudio(1);}
+    else if(el.hasAttribute("data-toggle")) S[a("data-toggle")]=!S[a("data-toggle")];
+    else switch(a("data-act")){
+      case "noise-toggle": S.noise=S.noise==="off"?S.lastOn:"off"; break;
+      case "adaptive": S.noise=S.lastOn="adaptive"; break;
+      case "custom": S.noise=S.lastOn="custom"; break;
+      case "bass":
+        S.bass=!S.bass;
+        if(S.bass&&S.audio!==1){S.bassPrev=S.audio;S.audio=1;snack("Switched to User EQ for Bass Boost");}
+        else if(!S.bass&&S.bassPrev!==null){S.audio=S.bassPrev;S.bassPrev=null;snack("Restored "+MODE_NAME[S.audio]);}
+        break;
+      case "flat": S.gains=[0,0,0,0,0]; setAudio(1); break;
+      case "save":
+        if(matchPreset()){snack("These bands already match "+matchPreset().name);break;}
+        S.dialog={mode:"new",id:null,name:"My preset "+(S.userN+1),gains:S.gains.slice(),error:"",fresh:true}; break;
+      case "dlg-cancel": S.dialog=null; break;
+      case "dlg-save": saveDialog(); break;
+      case "dlg-delete": var del=S.dialog.id; S.dialog=null; deletePreset(del); break;
+      case "undo": clearTimeout(snackTimer); undoDelete(); break;
+      case "retry": S.conn="connected"; break;
+      default: return;
+    }
+    render();
+  });
+
+  // Live slider updates without rebuilding the DOM mid-drag; full render on release.
+  document.addEventListener("input",function(e){
+    var t=e.target;
+    if(t.hasAttribute("data-dlg-name")){
+      S.dialog.name=t.value; S.dialog.error="";
+      qa("[data-dlg-name]").forEach(function(f){if(f!==t) f.value=t.value; f.parentNode.classList.remove("err");});
+      qa("[data-dlg-msg]").forEach(function(m){m.textContent="";});
+      qa("[data-dlg-count]").forEach(function(c){c.textContent=t.value.length+" / "+NAME_MAX;});
+    } else if(t.hasAttribute("data-noise")){
+      S.level=100-(+t.value); S.noise=S.lastOn="custom";
+      var L=mix(S.level);
+      qa("[data-noise]").forEach(function(r){if(r!==t) r.value=t.value; r.setAttribute("style",noiseStyle());});
+      qa(".nval").forEach(function(v){v.textContent=L.t;v.className="nval "+L.c;});
+    } else if(t.hasAttribute("data-band")){
+      var i=+t.getAttribute("data-band"); S.gains[i]=+t.value; if(S.audio!==1) setAudio(1);
+      qa('[data-band="'+i+'"]').forEach(function(r){if(r!==t) r.value=t.value; r.setAttribute("style",bandStyle(S.gains[i]));});
+      qa('[data-db="'+i+'"]').forEach(function(d){d.textContent=fmtDb(S.gains[i]);});
+      qa("[data-eqlabel]").forEach(function(d){d.textContent=eqLabel();});
+    } else if(t.hasAttribute("data-sidetone")){
+      S.sidetone=+t.value;
+      qa("[data-sidetone]").forEach(function(r){if(r!==t) r.value=t.value;
+        r.setAttribute("style","--rt:linear-gradient(to right,var(--accent) "+(S.sidetone*25)+"%,var(--track) "+(S.sidetone*25)+"%)");});
+      qa("[data-sidetone-v]").forEach(function(d){d.textContent=S.sidetone;});
+    }
+  });
+  document.addEventListener("change",function(e){if(e.target.matches('input[type=range]')) render();});
+  document.addEventListener("keydown",function(e){
+    if(!S.dialog||!e.target.hasAttribute||!e.target.hasAttribute("data-dlg-name")) return;
+    if(e.key==="Enter"){e.preventDefault();saveDialog();render();}
+    else if(e.key==="Escape"){S.dialog=null;render();}
+  });
+  render();
+})();
+</script>
+</body>
+</html>

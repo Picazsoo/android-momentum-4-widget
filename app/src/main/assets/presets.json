@@ -1,0 +1,14 @@
+{
+  "profile": "momentum4-graphic-eq-v2",
+  "unit": "0.1 dB",
+  "band_labels_hz": [63, 250, 1000, 4000, 8000],
+  "presets": [
+    { "id": "warm",     "name": "Warm",      "gainsTenthsDb": [30, 15, 0, -10, -20] },
+    { "id": "bright",   "name": "Bright",    "gainsTenthsDb": [-10, 0, 5, 20, 30] },
+    { "id": "vocal",    "name": "Vocal",     "gainsTenthsDb": [-20, -5, 25, 20, 0] },
+    { "id": "deepBass", "name": "Deep Bass", "gainsTenthsDb": [50, 25, 0, 0, 0] },
+    { "id": "loudness", "name": "Loudness",  "gainsTenthsDb": [35, 10, -10, 15, 30] },
+    { "id": "soft",     "name": "Soft",      "gainsTenthsDb": [10, 5, 0, -15, -30] },
+    { "id": "acoustic", "name": "Acoustic",  "gainsTenthsDb": [10, 10, 5, 10, 15] }
+  ]
+}

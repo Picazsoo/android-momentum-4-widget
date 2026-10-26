@@ -1,0 +1,311 @@
+{
+  "status": "synthetic conformance fixtures; not device traffic",
+  "vectors": [
+    {
+      "name": "get_anc_master",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x1A05",
+      "payload": [],
+      "hex": "FF 03 00 00 04 95 1A 05"
+    },
+    {
+      "name": "enable_anc_master",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x1A04",
+      "payload": [
+        1
+      ],
+      "hex": "FF 03 00 01 04 95 1A 04 01"
+    },
+    {
+      "name": "get_anc_modes",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x1A01",
+      "payload": [],
+      "hex": "FF 03 00 00 04 95 1A 01"
+    },
+    {
+      "name": "disable_adaptive",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x1A00",
+      "payload": [
+        3,
+        0
+      ],
+      "hex": "FF 03 00 02 04 95 1A 00 03 00"
+    },
+    {
+      "name": "enable_adaptive",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x1A00",
+      "payload": [
+        3,
+        1
+      ],
+      "hex": "FF 03 00 02 04 95 1A 00 03 01"
+    },
+    {
+      "name": "anti_wind_auto",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x1A00",
+      "payload": [
+        1,
+        2
+      ],
+      "hex": "FF 03 00 02 04 95 1A 00 01 02"
+    },
+    {
+      "name": "custom_midpoint",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x1A02",
+      "payload": [
+        50
+      ],
+      "hex": "FF 03 00 01 04 95 1A 02 32"
+    },
+    {
+      "name": "get_eq_configuration",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x1000",
+      "payload": [],
+      "hex": "FF 03 00 00 04 95 10 00"
+    },
+    {
+      "name": "get_eq_band0",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x1002",
+      "payload": [
+        0
+      ],
+      "hex": "FF 03 00 01 04 95 10 02 00"
+    },
+    {
+      "name": "eq_band0_plus2_5",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x1001",
+      "payload": [
+        0,
+        25
+      ],
+      "hex": "FF 03 00 02 04 95 10 01 00 19"
+    },
+    {
+      "name": "eq_band1_minus2_5",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x1001",
+      "payload": [
+        1,
+        231
+      ],
+      "hex": "FF 03 00 02 04 95 10 01 01 E7"
+    },
+    {
+      "name": "enable_bass_bit_only",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x1008",
+      "payload": [
+        1
+      ],
+      "hex": "FF 03 00 01 04 95 10 08 01"
+    },
+    {
+      "name": "get_audio_mode",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x0804",
+      "payload": [],
+      "hex": "FF 03 00 00 04 95 08 04"
+    },
+    {
+      "name": "select_user_eq",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x0803",
+      "payload": [
+        0,
+        1
+      ],
+      "hex": "FF 03 00 02 04 95 08 03 00 01"
+    },
+    {
+      "name": "subscribe_eq",
+      "kind": "command",
+      "vendor": "0x0495",
+      "command_id": "0x0007",
+      "payload": [
+        8
+      ],
+      "hex": "FF 03 00 01 04 95 00 07 08"
+    },
+    {
+      "name": "firmware_3_38_3",
+      "kind": "response",
+      "vendor": "0x0495",
+      "command_id": "0x1301",
+      "payload": [
+        0,
+        3,
+        0,
+        38,
+        0,
+        3
+      ],
+      "hex": "FF 03 00 06 04 95 13 01 00 03 00 26 00 03"
+    },
+    {
+      "name": "eq_configuration_five_bands",
+      "kind": "response",
+      "vendor": "0x0495",
+      "command_id": "0x1100",
+      "payload": [
+        5,
+        196,
+        60,
+        0,
+        0
+      ],
+      "hex": "FF 03 00 05 04 95 11 00 05 C4 3C 00 00"
+    },
+    {
+      "name": "eq_band_gain_minus2_5",
+      "kind": "response",
+      "vendor": "0x0495",
+      "command_id": "0x1102",
+      "payload": [
+        231
+      ],
+      "hex": "FF 03 00 01 04 95 11 02 E7"
+    },
+    {
+      "name": "eq_gain_snapshot",
+      "kind": "notification",
+      "vendor": "0x0495",
+      "command_id": "0x1082",
+      "payload": [
+        20,
+        246,
+        0,
+        10,
+        236
+      ],
+      "hex": "FF 03 00 05 04 95 10 82 14 F6 00 0A EC"
+    },
+    {
+      "name": "bass_notification",
+      "kind": "notification",
+      "vendor": "0x0495",
+      "command_id": "0x1089",
+      "payload": [
+        1
+      ],
+      "hex": "FF 03 00 01 04 95 10 89 01"
+    },
+    {
+      "name": "audio_mode_user_eq",
+      "kind": "notification",
+      "vendor": "0x0495",
+      "command_id": "0x0884",
+      "payload": [
+        0,
+        1
+      ],
+      "hex": "FF 03 00 02 04 95 08 84 00 01"
+    },
+    {
+      "name": "battery_one_byte",
+      "kind": "response",
+      "vendor": "0x0495",
+      "command_id": "0x0703",
+      "payload": [
+        80
+      ],
+      "hex": "FF 03 00 01 04 95 07 03 50"
+    },
+    {
+      "name": "battery_unknown",
+      "kind": "notification",
+      "vendor": "0x0495",
+      "command_id": "0x0683",
+      "payload": [
+        255
+      ],
+      "hex": "FF 03 00 01 04 95 06 83 FF"
+    },
+    {
+      "name": "anc_modes_snapshot",
+      "kind": "notification",
+      "vendor": "0x0495",
+      "command_id": "0x1A81",
+      "payload": [
+        1,
+        2,
+        2,
+        0,
+        3,
+        0
+      ],
+      "hex": "FF 03 00 06 04 95 1A 81 01 02 02 00 03 00"
+    }
+  ],
+  "stream_cases": [
+    {
+      "name": "split_header",
+      "chunks": [
+        "FF 03 00",
+        "00 04 95 1A 05"
+      ],
+      "expected_commands": [
+        "0x1A05"
+      ]
+    },
+    {
+      "name": "two_frames",
+      "chunks": [
+        "ff 03 00 01 04 95 1b 05 01 ff 03 00 01 04 95 1a 83 32"
+      ],
+      "expected_commands": [
+        "0x1B05",
+        "0x1A83"
+      ]
+    },
+    {
+      "name": "reject_flags_as_length",
+      "chunks": [
+        "FF 03 01 00 04 95 1A 05"
+      ],
+      "expected": "Reject unsupported checksum flag; never treat as length 256"
+    },
+    {
+      "name": "sync_inside_partial_payload",
+      "chunks": [
+        "FF 03 00 04 04 95 12 06 41 FF 03",
+        "42"
+      ],
+      "expected_payload": [
+        65,
+        255,
+        3,
+        66
+      ]
+    },
+    {
+      "name": "vendor_mismatch",
+      "chunks": [
+        "ff 03 00 01 00 1d 1b 05 01"
+      ],
+      "expected": "Do not satisfy an outstanding vendor 0x0495 request"
+    }
+  ]
+}
