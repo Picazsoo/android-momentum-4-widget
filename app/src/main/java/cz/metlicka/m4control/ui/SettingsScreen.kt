@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -70,9 +72,8 @@ fun SettingsScreen(st: AppState, onBack: () -> Unit, onPick: () -> Unit) {
                 SwitchRow("Lock touch controls", st.shownTouchLock, { DeviceController.setTouchLock(it) },
                     enabled = ok(Setting.TOUCH_LOCK))
                 SidetoneRow(s.settings[Setting.SIDETONE.key], ok(Setting.SIDETONE))
-                SwitchRow("Pause at full transparency", bool(Setting.PAUSE_FULL_TRANSPARENCY),
-                    { DeviceController.setSetting(Setting.PAUSE_FULL_TRANSPARENCY, if (it) 1 else 0) },
-                    enabled = ok(Setting.PAUSE_FULL_TRANSPARENCY), badge = "Unverified")
+                // "Pause at full transparency" (1800) is hidden: on the test device it had no visible
+                // effect with the Custom mix at full transparency (plan: open question 4).
             }
             M4Card(padded = false) {
                 SectionTitle("Device")
@@ -167,8 +168,10 @@ fun PickerScreen(st: AppState, onBack: (() -> Unit)?, onDone: () -> Unit) {
     val c = LocalM4.current
     val devices = remember(st.link) { DeviceController.link.bondedDevices() }
     var chosen by remember { mutableStateOf(st.deviceAddress ?: devices.firstOrNull()?.address) }
-    Column {
+    Column(Modifier.fillMaxSize()) {
         AppBar("Choose headphones", onBack = onBack)
+        // The list scrolls; "Use this device" stays pinned to the bottom of the screen.
+        Box(Modifier.weight(1f)) {
         ScreenColumn {
             M4Card(padded = false) {
                 SectionTitle("Paired devices")
@@ -192,7 +195,9 @@ fun PickerScreen(st: AppState, onBack: (() -> Unit)?, onDone: () -> Unit) {
                 }
             }
             Banner(Icons.Default.Info, "Not listed? Pair the headphones in Android Bluetooth settings first, then come back.")
-            Gap(8)
+        }
+        }
+        Box(Modifier.fillMaxWidth().background(c.bg).navigationBarsPadding().padding(horizontal = 12.dp, vertical = 10.dp)) {
             Button(
                 onClick = {
                     val d = devices.firstOrNull { it.address == chosen } ?: return@Button
@@ -202,7 +207,7 @@ fun PickerScreen(st: AppState, onBack: (() -> Unit)?, onDone: () -> Unit) {
                 enabled = chosen != null,
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(backgroundColor = c.accent, contentColor = c.onAccent),
-                modifier = Modifier.fillMaxWidth().height(44.dp).padding(horizontal = 4.dp),
+                modifier = Modifier.fillMaxWidth().height(48.dp),
             ) { Text("USE THIS DEVICE", fontWeight = FontWeight.Medium) }
         }
     }

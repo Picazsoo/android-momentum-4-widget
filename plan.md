@@ -253,8 +253,8 @@ large widget's footer ("Connected · AAC"); unknown/255 → omitted.
 
 ### Optional controls (app only, v1)
 
-Smart Pause, on-head detection, touch lock, sidetone, pause at full transparency
- — on the app's settings screen; each control disables itself if its
+Smart Pause, on-head detection, touch lock, sidetone — on the app's settings screen
+(`1800` is hidden, see open question 4); each control disables itself if its
 command errors. Not on the widget.
 
 ## Project structure
@@ -469,8 +469,11 @@ and dark, with switches to preview link states and the device's audio mode.
 2. **Firmware policy** outside 3.38.3 — currently "allow with banner"; revisit
    after testing other versions.
 3. **Error codes** — meanings unknown; kept and shown as hex for now.
-4. **`1800` naming** — exposed as "Pause at full transparency"; zaval's command map
-   calls it "TransparentHearing_Mode". Confirm what it does before relying on it.
+4. **`1800`** — hidden in 0.1. zaval's command map calls it "TransparentHearing_Mode". Tested on
+   firmware 3.38.3: the headphones accept it (and answer with a transparency event), but with it on,
+   setting the Custom mix to full transparency did not pause playback. Probably belongs to the
+   separate Transparent Hearing mode (`1804`, switched by a headphone gesture), which the app
+   doesn't use.
 5. **Compact tap targets** with switch + AUTO + 7 stops — check on a real launcher;
    fallback is moving AUTO into the header.
 

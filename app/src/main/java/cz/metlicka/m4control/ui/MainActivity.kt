@@ -28,6 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
@@ -109,7 +110,8 @@ private fun App() {
         st.link == LinkState.NO_DEVICE && screen == "home" -> "pick"
         else -> screen
     }
-    Scaffold(scaffoldState = scaffold, backgroundColor = c.bg) { pad ->
+    Scaffold(scaffoldState = scaffold, backgroundColor = c.bg,
+        snackbarHost = { SnackbarHost(it, Modifier.navigationBarsPadding()) }) { pad ->
         Box(Modifier.fillMaxSize().background(c.bg).padding(bottom = pad.calculateBottomPadding())) {
             when (shown) {
                 "permission" -> PermissionScreen { permission.launch(Manifest.permission.BLUETOOTH_CONNECT) }

@@ -221,7 +221,8 @@ object DeviceController {
 
     private fun fail(key: String, message: String) {
         clearDesired(key)
-        _state.update { it.copy(error = message) }
+        // Background refreshes fail silently; the banners already show the link state.
+        if (key != "refresh") _state.update { it.copy(error = message) }
     }
 
     private fun clearDesired(key: String) = _state.update {
