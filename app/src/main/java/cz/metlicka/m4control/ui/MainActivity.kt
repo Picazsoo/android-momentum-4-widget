@@ -25,6 +25,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
@@ -168,15 +169,17 @@ private fun HomeScreen(st: AppState, onEq: () -> Unit, onSettings: () -> Unit) {
 private fun DeviceCard(st: AppState) {
     val c = LocalM4.current
     val s = st.snapshot
-    M4Card {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(48.dp).clip(CircleShape).background(c.selected), contentAlignment = Alignment.Center) {
-                Icon(painterResource(R.drawable.ic_headset), null, tint = c.fg2)
+    // Compact: icon, name + link dot, and one row of pills (battery, codec, freshness).
+    Card(Modifier.fillMaxWidth().padding(vertical = 4.dp), shape = RoundedCornerShape(16.dp), backgroundColor = c.card, elevation = 2.dp) {
+        Row(Modifier.padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(36.dp).clip(CircleShape).background(c.selected), contentAlignment = Alignment.Center) {
+                Icon(painterResource(R.drawable.ic_headset), null, tint = c.fg2, modifier = Modifier.size(20.dp))
             }
-            RowGap(14)
+            RowGap(12)
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(st.deviceName ?: "Headphones", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = c.fg)
+                    Text(st.deviceName ?: "Headphones", fontSize = 15.sp, fontWeight = FontWeight.Medium, color = c.fg,
+                        maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                     RowGap(8)
                     StatusDot(when (st.link) {
                         LinkState.CONNECTED -> c.ok
@@ -188,14 +191,13 @@ private fun DeviceCard(st: AppState) {
                         Caption("Connecting…")
                     }
                 }
-                Gap(4)
+                Gap(3)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     val battery = s.battery?.let { "$it%" } ?: "—"
                     Chip(if (s.charging == 1) "$battery ⚡" else battery)
                     if (st.link == LinkState.CONNECTED) s.codec?.let { Codec.CODECS[it] }?.let { Chip(it) }
+                    Chip(if (st.sessionOpen) "Live" else if (st.stale) "Last known · ${agoText(st.lastSyncedAt)}" else "Updated ${agoText(st.lastSyncedAt)}")
                 }
-                Gap(4)
-                Chip(if (st.sessionOpen) "Live" else if (st.stale) "Last known · ${agoText(st.lastSyncedAt)}" else "Updated ${agoText(st.lastSyncedAt)}")
             }
         }
     }
