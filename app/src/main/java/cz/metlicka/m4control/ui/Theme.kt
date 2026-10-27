@@ -9,9 +9,11 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import cz.metlicka.m4control.device.DeviceController
 
 /** App-specific Material 1 colors on top of MaterialTheme (same palette as the widget mockup). */
 @Immutable
@@ -58,9 +60,24 @@ private val Dark = M4Colors(
 
 val LocalM4 = staticCompositionLocalOf { Light }
 
+/** Settings → "Theme" ("system", "light" or "dark"); read once from the store, then kept in sync by [setTheme]. */
+val themeMode = mutableStateOf(DeviceController.store.theme)
+
+fun setTheme(mode: String) {
+    DeviceController.store.theme = mode
+    themeMode.value = mode
+}
+
+@Composable
+fun isDarkTheme(): Boolean = when (themeMode.value) {
+    "dark" -> true
+    "light" -> false
+    else -> isSystemInDarkTheme()
+}
+
 @Composable
 fun M4Theme(content: @Composable () -> Unit) {
-    val dark = isSystemInDarkTheme()
+    val dark = isDarkTheme()
     val c = if (dark) Dark else Light
     val colors = if (dark) {
         darkColors(primary = c.bar, primaryVariant = Color.Black, secondary = c.accent, background = c.bg,

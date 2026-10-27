@@ -33,19 +33,19 @@ EQ presets and Bass Boost, one tap away, without opening Smart Control Plus.
 - **Home-screen widget**, one resizable widget with layouts for 1 to 4+ rows: noise switch, Adaptive,
   a 7-stop slider, your 4 favorite presets and Bass Boost; from 3 rows it adds captions and the
   headphones' touch lock. A tap takes about half a second.
-- **Optional widget lock:** a lock in the widget's corner blocks every tap — controls and opening the
-  app — until you unlock it. Each widget locks separately.
-- Material Design 1 look with rounded corners, light and dark themes following the system.
+- **Widget lock:** a lock in the widget's corner blocks every tap — controls and opening the
+  app — until you unlock it. Each widget locks separately; Settings can hide the lock.
+- Material Design 1 look with rounded corners, light and dark themes (follow the system or pick one in Settings).
 - Optional headphone settings: Smart Pause, on-head detection, touch lock, sidetone.
 
 ## Requirements
 
-- Android 10 or newer, with the headphones already paired in Android's Bluetooth settings.
+- Android 8 or newer, with the headphones already paired in Android's Bluetooth settings.
 - MOMENTUM 4 on firmware **3.38.3** (the version this was built and tested against; other versions show
   an "untested firmware" notice but are allowed).
 - The app is sideloaded — it isn't on Google Play.
 
-Tested on a Samsung Galaxy S24 (Android 16).
+Tested on a Samsung Galaxy S24 (Android 16) and a Sony Xperia X Compact (Android 8.0).
 
 ## Build and install
 

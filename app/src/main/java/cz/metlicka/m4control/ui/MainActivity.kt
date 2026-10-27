@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -42,6 +43,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -72,9 +74,23 @@ import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        setContent { M4Theme { App() } }
+        setContent {
+            // Bars and window follow the app's theme setting, not only the system's: the app bar is dark
+            // in both themes, so the status bar always gets light icons.
+            val dark = isDarkTheme()
+            DisposableEffect(dark) {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+                    // The scrims enableEdgeToEdge() uses by default; visible behind 3-button navigation.
+                    navigationBarStyle = if (dark) SystemBarStyle.dark(0x801B1B1B.toInt())
+                    else SystemBarStyle.light(0xE6FFFFFF.toInt(), 0x801B1B1B.toInt()),
+                )
+                window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(if (dark) 0xFF303030.toInt() else 0xFFFAFAFA.toInt()))
+                onDispose {}
+            }
+            M4Theme { App() }
+        }
         if (cz.metlicka.m4control.BuildConfig.DEBUG) cz.metlicka.m4control.widget.WidgetUpdater.selfTest(this)
     }
 

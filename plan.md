@@ -22,7 +22,7 @@ below were cross-checked against them and confirmed on a real MOMENTUM 4.
 - App name **"M4 Control"**, applicationId **`cz.metlicka.m4control`** (debug builds
   `cz.metlicka.m4control.debug`). The ID and the release signing key are the app's permanent
   identity: never change either after a release, or updates stop installing.
-- **Kotlin**, `minSdk 29` (Android 10), `compileSdk 36`, `targetSdk 35`.
+- **Kotlin**, `minSdk 26` (Android 8), `compileSdk 36`, `targetSdk 35`.
   Build host has SDK platforms 35/36/37, build-tools 35/36, Java 25. **Pin the
   Gradle Java toolchain to 21** (`kotlin { jvmToolchain(21) }`) — AGP/Kotlin lag
   new JDKs.
@@ -309,7 +309,7 @@ app/
      4×1, `maxResizeHeight` 4×3, `targetCellWidth="4"` / `targetCellHeight="2"`,
      default layout medium.
    - API 31+: `RemoteViews(mapOf(SizeF(…) to compact, … to medium, … to large))`.
-     API 29–30: `onAppWidgetOptionsChanged` → pick by `OPTION_APPWIDGET_MIN_HEIGHT`
+     API 26–30: `onAppWidgetOptionsChanged` → pick by the portrait height (`OPTION_APPWIDGET_MAX_HEIGHT`); no `setAlpha` on RemoteViews below API 31 (the widget fails to load)
      (< ~110 dp compact, < ~180 dp medium, else large).
    - **PendingIntents:** `FLAG_IMMUTABLE | FLAG_UPDATE_CURRENT`, unique
      `requestCode` per control: `100 + stop`, `150` switch, `160` Adaptive,
@@ -416,7 +416,7 @@ and dark, with switches to preview link states and the device's audio mode.
 - **Lock touch controls** (tall and large sizes): a row below Bass Boost toggling the headphones'
   touch lock (`1606`/`1607`). It has no notification on the registered features, so widget
   sessions read it (one extra request); dimmed while unknown or pending.
-- **Optional lock** (Settings → "Lock button on widget", off by default): a lock icon at the header's
+- **Optional lock** (Settings → "Lock button on widget", on by default): a lock icon at the header's
   right end, per widget instance (`widget_locked_<appWidgetId>`). Unlocked: faint open lock. Locked: a
   grey veil covers the whole card and swallows every tap — controls and opening the app; a tap on it only
   shows "Locked — tap the lock to unlock" for 2.5 s. The closed lock sits above the veil in an undimmed

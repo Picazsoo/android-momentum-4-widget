@@ -2,6 +2,7 @@ package cz.metlicka.m4control.state
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
 import cz.metlicka.m4control.device.EqModel
 import cz.metlicka.m4control.device.NoiseMode
 import cz.metlicka.m4control.device.Preset
@@ -54,11 +55,16 @@ class Store(context: Context) {
 
     fun presets(): List<Preset> = EqModel.ordered(builtIns + userPresets(), presetOrder)
 
+    /** Settings → "Theme": "system", "light" or "dark". Below Android 10 there is no system dark mode. */
+    var theme: String
+        get() = prefs.getString("theme", null) ?: if (Build.VERSION.SDK_INT >= 29) "system" else "light"
+        set(v) = prefs.edit().putString("theme", v).apply()
+
     // ---- widget lock (per widget instance) ----
 
     /** Settings → "Lock button on widget". Turning it off unlocks every widget. */
     var widgetLockEnabled: Boolean
-        get() = prefs.getBoolean("widget_lock_enabled", false)
+        get() = prefs.getBoolean("widget_lock_enabled", true)
         set(v) {
             val e = prefs.edit().putBoolean("widget_lock_enabled", v)
             if (!v) prefs.all.keys.filter { it.startsWith("widget_locked_") }.forEach { e.remove(it) }

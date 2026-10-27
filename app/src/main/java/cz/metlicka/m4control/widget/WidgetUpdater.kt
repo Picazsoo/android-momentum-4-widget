@@ -73,27 +73,37 @@ object WidgetUpdater {
     }
 
     fun build(context: Context, mgr: AppWidgetManager, id: Int): RemoteViews {
+        // Each size starts where its content fits: the tall layout needs ~210 dp, ~235 dp with its footer,
+        // the large one ~300 dp.
         if (Build.VERSION.SDK_INT >= 31) {
             // The launcher picks the largest layout that fits as the user resizes.
             return RemoteViews(mapOf(
                 SizeF(250f, 40f) to views(context, R.layout.widget_compact, Size.COMPACT, id),
                 SizeF(250f, 120f) to views(context, R.layout.widget_medium, Size.MEDIUM, id),
                 SizeF(250f, 205f) to views(context, R.layout.widget_tall, Size.TALL, id),
+                SizeF(250f, 240f) to views(context, R.layout.widget_tall, Size.TALL_FOOTER, id),
                 SizeF(250f, 295f) to views(context, R.layout.widget_large, Size.LARGE, id),
             ))
         }
-        val h = mgr.getAppWidgetOptions(id).getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 120)
+        // Before API 31 the app picks the layout. Launchers report the portrait height as MAX_HEIGHT
+        // and the landscape height as MIN_HEIGHT.
+        val o = mgr.getAppWidgetOptions(id)
+        val portrait = context.resources.configuration.orientation != android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        val h = o.getInt(if (portrait) AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT else AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
+            .takeIf { it > 0 } ?: o.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 120)
         return when {
             h < 120 -> views(context, R.layout.widget_compact, Size.COMPACT, id)
             h < 205 -> views(context, R.layout.widget_medium, Size.MEDIUM, id)
-            h < 295 -> views(context, R.layout.widget_tall, Size.TALL, id)
+            h < 240 -> views(context, R.layout.widget_tall, Size.TALL, id)
+            h < 295 -> views(context, R.layout.widget_tall, Size.TALL_FOOTER, id)
             else -> views(context, R.layout.widget_large, Size.LARGE, id)
         }
     }
 
-    /** Rows of a typical launcher: COMPACT 1, MEDIUM 2, TALL 3, LARGE 4+. */
-    private enum class Size { COMPACT, MEDIUM, TALL, LARGE;
-        val roomy get() = this == TALL || this == LARGE
+    /** Rows of a typical launcher: COMPACT 1, MEDIUM 2, TALL 3 (TALL_FOOTER when there is room), LARGE 4+. */
+    private enum class Size { COMPACT, MEDIUM, TALL, TALL_FOOTER, LARGE;
+        val roomy get() = this == TALL || this == TALL_FOOTER || this == LARGE
+        val footer get() = this == TALL_FOOTER || this == LARGE
     }
 
     private fun views(ctx: Context, @LayoutRes layout: Int, size: Size, widgetId: Int): RemoteViews {
@@ -133,17 +143,18 @@ object WidgetUpdater {
         rv.setViewVisibility(R.id.status, if (statusText != null) View.VISIBLE else View.GONE)
         rv.setTextViewText(R.id.status, statusText ?: "")
         color(ctx, rv, R.id.status, if (st.link == LinkState.UNAVAILABLE) R.color.w_busy else R.color.w_fg2)
-        rv.setFloat(R.id.controls, "setAlpha", if (st.link == LinkState.CONNECTED) 1f else 0.45f)
+        alpha(rv, R.id.controls, a = if (st.link == LinkState.CONNECTED) 1f else 0.45f)
 
         bindNoise(ctx, rv, st, size)
         if (size != Size.COMPACT) bindEq(ctx, rv, st)
         if (size.roomy) {
             val touch = st.shownTouchLock
             rv.setImageViewResource(R.id.sw_touch, if (touch == true) R.drawable.w_sw_on else R.drawable.w_sw_off)
-            rv.setFloat(R.id.sw_touch, "setAlpha", if (touch == null || st.touchLockPending) 0.55f else 1f)
+            alpha(rv, R.id.sw_touch, image = true, a = if (touch == null || st.touchLockPending) 0.55f else 1f)
             rv.setOnClickPendingIntent(R.id.touch_row, service(ctx, CommandService.ACTION_TOUCH_LOCK, 210))
         }
-        if (size == Size.LARGE) {
+        if (size == Size.TALL_FOOTER) rv.setViewVisibility(R.id.foot_bar, View.VISIBLE)
+        if (size.footer) {
             rv.setTextViewText(R.id.foot_left, when (st.link) {
                 LinkState.CONNECTED -> "Connected" + (s.codec?.let { Codec.CODECS[it] }?.let { " · $it" } ?: "")
                 LinkState.DISCONNECTED -> "Disconnected"
@@ -167,7 +178,7 @@ object WidgetUpdater {
             else -> R.color.w_fg3
         })
         val pendingAlpha = if (st.noisePending) 0.55f else 1f
-        rv.setFloat(R.id.readout, "setAlpha", pendingAlpha)
+        alpha(rv, R.id.readout, a = pendingAlpha)
 
         rv.setImageViewResource(R.id.sw_noise, if (mode != null && mode != NoiseMode.OFF) R.drawable.w_sw_on else R.drawable.w_sw_off)
         rv.setOnClickPendingIntent(R.id.sw_noise, service(ctx, CommandService.ACTION_NOISE_TOGGLE, 150))
@@ -202,14 +213,14 @@ object WidgetUpdater {
             stop < CENTER -> R.drawable.w_thumb_anc
             else -> R.drawable.w_thumb_trans
         })
-        rv.setFloat(THUMBS[stop], "setAlpha", pendingAlpha)
+        alpha(rv, THUMBS[stop], image = true, a = pendingAlpha)
     }
 
     private fun bindEq(ctx: Context, rv: RemoteViews, st: AppState) {
         val presets = DeviceController.presets.value
         val label = EqModel.label(st.shownAudioMode, st.shownGains, presets.all)
         rv.setTextViewText(R.id.eq_label, label)
-        rv.setFloat(R.id.eq_label, "setAlpha", if (st.eqPending) 0.55f else 1f)
+        alpha(rv, R.id.eq_label, a = if (st.eqPending) 0.55f else 1f)
         val active = if (st.shownAudioMode == 1) EqModel.match(st.shownGains, presets.all) else null
         val favs = EqModel.favoritePresets(presets.all, presets.favorites)
         // Same look as the app's toggle group: the selected segment's fill is rounded only on the group's outer edge.
@@ -234,10 +245,10 @@ object WidgetUpdater {
         // Large: switch in a Bass Boost row. Medium: BASS pill next to the favorites. Missing ids are ignored.
         val bass = st.shownBass == true
         rv.setImageViewResource(R.id.sw_bass, if (bass) R.drawable.w_sw_on else R.drawable.w_sw_off)
-        rv.setFloat(R.id.sw_bass, "setAlpha", if (st.bassPending) 0.55f else 1f)
+        alpha(rv, R.id.sw_bass, image = true, a = if (st.bassPending) 0.55f else 1f)
         rv.setViewVisibility(R.id.bass_row_on, if (bass) View.VISIBLE else View.GONE)
         rv.setViewVisibility(R.id.bass_row_off, if (bass) View.GONE else View.VISIBLE)
-        rv.setFloat(R.id.bass_row, "setAlpha", if (st.bassPending) 0.55f else 1f)
+        alpha(rv, R.id.bass_row, a = if (st.bassPending) 0.55f else 1f)
         rv.setOnClickPendingIntent(R.id.bass_row, service(ctx, CommandService.ACTION_BASS, 200))
     }
 
@@ -266,6 +277,15 @@ object WidgetUpdater {
         PendingIntent.getBroadcast(ctx, 10_000 + widgetId * 4 + slot,
             Intent(ctx, MomentumWidgetProvider::class.java).setAction(action).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+
+    /**
+     * Dims a view. View.setAlpha is usable in RemoteViews only from API 31 — before that it makes the whole
+     * widget fail to load — so older launchers dim images only (setImageAlpha) and leave other views as they are.
+     */
+    private fun alpha(rv: RemoteViews, id: Int, a: Float, image: Boolean = false) {
+        if (Build.VERSION.SDK_INT >= 31) rv.setFloat(id, "setAlpha", a)
+        else if (image) rv.setInt(id, "setImageAlpha", (a * 255).toInt())
+    }
 
     /** API 31+: color resource resolved by the launcher, so it follows dark mode without a redraw. */
     private fun color(ctx: Context, rv: RemoteViews, id: Int, @ColorRes res: Int) {

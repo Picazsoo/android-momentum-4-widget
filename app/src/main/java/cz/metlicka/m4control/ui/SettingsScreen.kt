@@ -57,6 +57,7 @@ fun SettingsScreen(st: AppState, onBack: () -> Unit, onPick: () -> Unit) {
     val c = LocalM4.current
     val s = st.snapshot
     var showLog by remember { mutableStateOf(false) }
+    var showTheme by remember { mutableStateOf(false) }
     Column {
         AppBar("Settings", onBack = onBack)
         ScreenColumn {
@@ -96,12 +97,41 @@ fun SettingsScreen(st: AppState, onBack: () -> Unit, onPick: () -> Unit) {
                     DeviceController.store.widgetLockEnabled = it
                     cz.metlicka.m4control.widget.WidgetUpdater.updateAll(ctx)
                 }, subtitle = "A lock in the widget's corner blocks every tap on it, including opening the app")
+                InfoRow("Theme", THEMES.first { it.first == themeMode.value }.second, chevron = true) { showTheme = true }
                 InfoRow("Frame log", "Recent control traffic", chevron = true) { showLog = true }
                 InfoRow("M4 Control", "Version ${BuildConfig.VERSION_NAME} (sideload)")
             }
         }
     }
     if (showLog) FrameLogDialog { showLog = false }
+    if (showTheme) ThemeDialog { showTheme = false }
+}
+
+/** "system" is offered only from Android 10, which introduced the system-wide dark theme. */
+private val THEMES = listOf("system" to "System default", "light" to "Light", "dark" to "Dark")
+
+@Composable
+private fun ThemeDialog(onDismiss: () -> Unit) {
+    val c = LocalM4.current
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        backgroundColor = c.card,
+        shape = RoundedCornerShape(16.dp),
+        title = { Text("Theme", color = c.fg) },
+        text = {
+            Column {
+                THEMES.filter { it.first != "system" || android.os.Build.VERSION.SDK_INT >= 29 }.forEach { (key, label) ->
+                    Row(Modifier.fillMaxWidth().clickable { setTheme(key); onDismiss() }.padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(selected = themeMode.value == key, onClick = { setTheme(key); onDismiss() },
+                            colors = RadioButtonDefaults.colors(selectedColor = c.accentText))
+                        Text(label, fontSize = 15.sp, color = c.fg, modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("CANCEL", color = c.accentText) } },
+    )
 }
 
 @Composable

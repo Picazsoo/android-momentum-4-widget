@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import androidx.core.app.ServiceCompat
 import cz.metlicka.m4control.R
 import cz.metlicka.m4control.device.DeviceController
 import cz.metlicka.m4control.device.NoiseControl
@@ -39,7 +40,7 @@ class CommandService : Service() {
             return START_NOT_STICKY
         }
         try {
-            startForeground(NOTIFICATION_ID, notification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
         } catch (e: Exception) {
             DeviceController.log("!! foreground start rejected: $e")
             stopSelf()
@@ -49,7 +50,7 @@ class CommandService : Service() {
         stopJob?.cancel()
         stopJob = scope.launch {
             DeviceController.busy.first { !it }
-            stopForeground(STOP_FOREGROUND_REMOVE)
+            ServiceCompat.stopForeground(this@CommandService, ServiceCompat.STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
         return START_NOT_STICKY

@@ -139,6 +139,17 @@ def toggle_half(row_id, icon, label, switch_id):
             </LinearLayout>'''
 
 
+def footer(visibility='visible'):
+    """Connection and last-sync line. The tall layout shows it only when the cell has room (WidgetUpdater)."""
+    return f'''
+    <LinearLayout android:id="@+id/foot_bar" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="{visibility}">{divider('        ')}
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="8dp" android:orientation="horizontal">
+            <TextView android:id="@+id/foot_left" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:maxLines="1" android:textColor="@color/w_fg3" android:textSize="11sp" />
+            <TextView android:id="@+id/foot_right" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" android:textColor="@color/w_fg3" android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>'''
+
+
 def layout_tall():
     """3-row cells (~210–290 dp): captions, slider, favorites and both switches on one line."""
     pad = 'android:paddingStart="14dp" android:paddingEnd="14dp" android:paddingTop="10dp" android:paddingBottom="10dp"'
@@ -168,6 +179,7 @@ def layout_tall():
             <ImageView android:layout_width="1dp" android:layout_height="24dp" android:layout_marginStart="10dp" android:layout_marginEnd="10dp" android:scaleType="fitXY" android:src="@color/w_div" />{toggle_half('touch_row', 'ic_touch', 'Touch lock', 'sw_touch')}
         </LinearLayout>
     </LinearLayout>
+    <ImageView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />{footer('gone')}
 </LinearLayout>
 '''
 
@@ -249,12 +261,7 @@ def layout_inner(kind):
         </LinearLayout>''')
     out.append('\n    </LinearLayout>')
     if kind == 'large':
-        out.append(divider('    '))
-        out.append('''
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="8dp" android:orientation="horizontal">
-        <TextView android:id="@+id/foot_left" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:maxLines="1" android:textColor="@color/w_fg3" android:textSize="11sp" />
-        <TextView android:id="@+id/foot_right" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" android:textColor="@color/w_fg3" android:textSize="11sp" />
-    </LinearLayout>''')
+        out.append(footer())
     out.append('\n</LinearLayout>\n')
     return ''.join(out)
 
