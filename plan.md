@@ -408,7 +408,12 @@ and dark, with switches to preview link states and the device's audio mode.
   - **Medium 4×2:** header; "Noise control" + readout; noise row; end labels;
     EQ caption + 4 favorites; Bass Boost.
   - **Large 4×3:** medium + footer "Connected · codec" and "updated … ago".
-- **Lock touch controls** (large size only): a row below Bass Boost toggling the headphones'
+- **Four layouts by height** (dp, chosen by the launcher on API 31+): compact ≥ 40 (1 row: header
+  with short readout + noise row), medium ≥ 120 (2 rows: + favorites with a BASS pill), tall ≥ 205
+  (3 rows: captions with full readout, noise row, Equalizer caption, favorites, Bass Boost and Touch
+  lock side by side), large ≥ 295 (4+ rows: + end labels, separate Bass Boost / Lock touch controls
+  rows, footer). Measured on One UI: 2 rows ≈ 150 dp, 3 rows ≈ 226 dp, 4 rows ≈ 306 dp.
+- **Lock touch controls** (tall and large sizes): a row below Bass Boost toggling the headphones'
   touch lock (`1606`/`1607`). It has no notification on the registered features, so widget
   sessions read it (one extra request); dimmed while unknown or pending.
 - **Optional lock** (Settings → "Lock button on widget", off by default): a lock icon at the header's

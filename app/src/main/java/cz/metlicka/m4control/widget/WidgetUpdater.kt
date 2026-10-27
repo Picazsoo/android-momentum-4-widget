@@ -60,7 +60,8 @@ object WidgetUpdater {
 
     /** Debug builds: inflate every layout once so RemoteViews errors show up in the frame log. */
     fun selfTest(context: Context) {
-        for ((name, layout) in listOf("compact" to R.layout.widget_compact, "medium" to R.layout.widget_medium, "large" to R.layout.widget_large)) {
+        for ((name, layout) in listOf("compact" to R.layout.widget_compact, "medium" to R.layout.widget_medium,
+                "tall" to R.layout.widget_tall, "large" to R.layout.widget_large)) {
             try {
                 RemoteViews(context.packageName, layout).apply(context, android.widget.FrameLayout(context))
                 views(context, layout, Size.LARGE, AppWidgetManager.INVALID_APPWIDGET_ID).apply(context, android.widget.FrameLayout(context))
@@ -77,18 +78,23 @@ object WidgetUpdater {
             return RemoteViews(mapOf(
                 SizeF(250f, 40f) to views(context, R.layout.widget_compact, Size.COMPACT, id),
                 SizeF(250f, 120f) to views(context, R.layout.widget_medium, Size.MEDIUM, id),
-                SizeF(250f, 235f) to views(context, R.layout.widget_large, Size.LARGE, id),
+                SizeF(250f, 205f) to views(context, R.layout.widget_tall, Size.TALL, id),
+                SizeF(250f, 295f) to views(context, R.layout.widget_large, Size.LARGE, id),
             ))
         }
         val h = mgr.getAppWidgetOptions(id).getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 120)
         return when {
             h < 120 -> views(context, R.layout.widget_compact, Size.COMPACT, id)
-            h < 235 -> views(context, R.layout.widget_medium, Size.MEDIUM, id)
+            h < 205 -> views(context, R.layout.widget_medium, Size.MEDIUM, id)
+            h < 295 -> views(context, R.layout.widget_tall, Size.TALL, id)
             else -> views(context, R.layout.widget_large, Size.LARGE, id)
         }
     }
 
-    private enum class Size { COMPACT, MEDIUM, LARGE }
+    /** Rows of a typical launcher: COMPACT 1, MEDIUM 2, TALL 3, LARGE 4+. */
+    private enum class Size { COMPACT, MEDIUM, TALL, LARGE;
+        val roomy get() = this == TALL || this == LARGE
+    }
 
     private fun views(ctx: Context, @LayoutRes layout: Int, size: Size, widgetId: Int): RemoteViews {
         DeviceController.init(ctx)
@@ -120,8 +126,8 @@ object WidgetUpdater {
         }
 
         val statusText = when (st.link) {
-            LinkState.DISCONNECTED -> if (size != Size.LARGE) "Not connected · last known" else "Not connected · last known settings"
-            LinkState.UNAVAILABLE -> if (size != Size.LARGE) "Control unavailable" else "Control connection unavailable"
+            LinkState.DISCONNECTED -> if (!size.roomy) "Not connected · last known" else "Not connected · last known settings"
+            LinkState.UNAVAILABLE -> if (!size.roomy) "Control unavailable" else "Control connection unavailable"
             else -> null
         }
         rv.setViewVisibility(R.id.status, if (statusText != null) View.VISIBLE else View.GONE)
@@ -131,11 +137,13 @@ object WidgetUpdater {
 
         bindNoise(ctx, rv, st, size)
         if (size != Size.COMPACT) bindEq(ctx, rv, st)
-        if (size == Size.LARGE) {
+        if (size.roomy) {
             val touch = st.shownTouchLock
             rv.setImageViewResource(R.id.sw_touch, if (touch == true) R.drawable.w_sw_on else R.drawable.w_sw_off)
             rv.setFloat(R.id.sw_touch, "setAlpha", if (touch == null || st.touchLockPending) 0.55f else 1f)
             rv.setOnClickPendingIntent(R.id.touch_row, service(ctx, CommandService.ACTION_TOUCH_LOCK, 210))
+        }
+        if (size == Size.LARGE) {
             rv.setTextViewText(R.id.foot_left, when (st.link) {
                 LinkState.CONNECTED -> "Connected" + (s.codec?.let { Codec.CODECS[it] }?.let { " · $it" } ?: "")
                 LinkState.DISCONNECTED -> "Disconnected"
@@ -150,7 +158,7 @@ object WidgetUpdater {
         val mode = st.shownNoiseMode
         val level = st.shownLevel
         val r = NoiseControl.readout(mode, level)
-        rv.setTextViewText(R.id.readout, if (size == Size.LARGE) r.text else r.short)
+        rv.setTextViewText(R.id.readout, if (size.roomy) r.text else r.short)
         color(ctx, rv, R.id.readout, when (r.tone) {
             NoiseControl.Tone.ANC -> R.color.w_anc_text
             NoiseControl.Tone.TRANSPARENCY -> R.color.w_trans_text

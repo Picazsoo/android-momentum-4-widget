@@ -7,12 +7,18 @@ EQ presets and Bass Boost, one tap away, without opening Smart Control Plus.
   <tr>
     <td align="center"><img src="docs/screenshots/main.png" width="280" alt="Main screen"></td>
     <td align="center"><img src="docs/screenshots/eq.png" width="280" alt="Equalizer screen"></td>
-    <td align="center"><img src="docs/screenshots/widgets.png" width="280" alt="Home-screen widgets, one unlocked and one locked"></td>
   </tr>
   <tr>
     <td align="center">Main screen</td>
     <td align="center">Equalizer</td>
-    <td align="center">Widgets — unlocked (4×3) and locked (4×2)</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/widgets.png" width="280" alt="Home-screen widgets in the 4-row and 3-row layouts"></td>
+    <td align="center"><img src="docs/screenshots/widgets-locked.png" width="280" alt="The same widgets locked: grey veil, only the lock stays active"></td>
+  </tr>
+  <tr>
+    <td align="center">Widgets — 4-row and 3-row layouts</td>
+    <td align="center">Widgets locked — only the lock stays active</td>
   </tr>
 </table>
 
@@ -24,9 +30,9 @@ EQ presets and Bass Boost, one tap away, without opening Smart Control Plus.
   a preset library — 7 built-in presets plus your own, which you can save, rename, delete (with undo)
   and reorder. The header always names the EQ you're editing, e.g. "Warm · edited".
 - **Bass Boost**, battery level and the active codec.
-- **Home-screen widget**, one resizable widget in three sizes (4×1, 4×2, 4×3): noise switch, Adaptive,
-  a 7-stop slider, your 4 favorite presets and Bass Boost; the large size adds the headphones' touch
-  lock. A tap takes about half a second.
+- **Home-screen widget**, one resizable widget with layouts for 1 to 4+ rows: noise switch, Adaptive,
+  a 7-stop slider, your 4 favorite presets and Bass Boost; from 3 rows it adds captions and the
+  headphones' touch lock. A tap takes about half a second.
 - **Optional widget lock:** a lock in the widget's corner blocks every tap — controls and opening the
   app — until you unlock it. Each widget locks separately.
 - Material Design 1 look with rounded corners, light and dark themes following the system.
